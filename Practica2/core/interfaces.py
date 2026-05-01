@@ -1,9 +1,8 @@
-from abc import ABC, abstractmethod
-
 """
 Módulo de interfaces CRUD.
 Define el contrato para operaciones básicas de gestión de datos.
 """
+from abc import ABC, abstractmethod
 
 
 class CrudInterface(ABC):
