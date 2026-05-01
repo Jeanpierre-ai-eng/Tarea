@@ -14,12 +14,19 @@ class StatsController:
     LEAVES_FILE      = "data/leaves.json"
 
     def __init__(self):
-        self.employees   = JsonManager(StatsController.EMPLOYEES_FILE).load()
-        self.leave_types = JsonManager(StatsController.LEAVE_TYPES_FILE).load()
-        self.leaves      = JsonManager(StatsController.LEAVES_FILE).load()
+        self.db_employees   = JsonManager(StatsController.EMPLOYEES_FILE)
+        self.db_leave_types = JsonManager(StatsController.LEAVE_TYPES_FILE)
+        self.db_leaves      = JsonManager(StatsController.LEAVES_FILE)
+
+    # Recarga los datos desde los archivos JSON.
+    def _reload(self):
+        self.employees   = self.db_employees.load()
+        self.leave_types = self.db_leave_types.load()
+        self.leaves      = self.db_leaves.load()
 
     # Punto de entrada del reporte. Imprime las tres secciones.
     def show(self):
+        self._reload()
         print("\n=== ESTADÍSTICAS DEL SISTEMA DE PERMISOS ===")
         self._employee_stats()
         self._leave_type_stats()
@@ -111,14 +118,12 @@ class StatsController:
             self.leaves
         ))
 
-        # --- Total tiempo solicitado ---
         # map + lambda: extrae el tiempo de cada permiso.
         tiempos = list(map(lambda l: l["tiempo"], self.leaves))
 
         # reduce + lambda: total de tiempo solicitado.
         total_tiempo = reduce(lambda acc, t: acc + t, tiempos, 0)
 
-        # --- Total descuentos ---
         # Función auxiliar: calcula días entre fecha_desde y fecha_hasta.
         def days_between(leave):
             fmt        = "%Y-%m-%d"
@@ -130,7 +135,7 @@ class StatsController:
         def calc_deduction(leave):
             hourly_rate = leave["employee"].get("salary", 0) / Employee.WORK_HOURS_MONTH
             days        = days_between(leave)
-            hours       = days * 8  # jornada laboral estándar: 8 horas/día
+            hours       = days * 8
             return round(hourly_rate * hours, 2)
 
         # reduce sobre permisos no remunerados: suma total de descuentos.
