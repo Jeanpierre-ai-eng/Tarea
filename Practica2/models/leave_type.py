@@ -1,55 +1,42 @@
-# Modelo de dominio: Producto.
-class Product:
-    # Atributos estáticos: límites mínimos para validación de dominio.
-    MIN_PRICE = 0.01
-    MIN_STOCK = 0
+# Modelo de dominio: Tipo de Permiso.
+class LeaveType:
+    # Atributos estáticos: valores válidos para el campo remunerado.
+    PAID   = "S"
+    UNPAID = "N"
 
-    def __init__(self, product_id, name, price, stock):
-        # Identificador privado: solo accesible mediante la property `product_id`.
-        self._product_id = product_id
-        self.name = name
-        self.price = price
-        self.stock = stock
+    def __init__(self, leave_type_id, description, is_paid):
+        # Identificador privado: solo accesible mediante la property `leave_type_id`.
+        self._leave_type_id = leave_type_id
+        self.description = description
+        self.is_paid = is_paid  # "S" o "N"
 
     # Property de solo lectura para el ID (atributo encapsulado).
     @property
-    def product_id(self):
-        return self._product_id
+    def leave_type_id(self):
+        return self._leave_type_id
 
-    # Property: indica si el producto tiene unidades disponibles.
+    # Property: indica si este tipo de permiso afecta la remuneración.
     @property
-    def is_in_stock(self):
-        return self.stock > Product.MIN_STOCK
+    def affects_salary(self):
+        return self.is_paid == LeaveType.UNPAID
 
-    # Property: valor total del inventario para este producto.
-    @property
-    def total_value(self):
-        return round(self.price * self.stock, 2)
-
-    # Property: representación legible con stock visible (útil para menús).
+    # Property: representación legible para listados y menús.
     @property
     def display_name(self):
-        return f"ID {self.product_id} - {self.name} (stock: {self.stock})"
+        remunerado = "Remunerado" if not self.affects_salary else "No remunerado"
+        return f"ID {self.leave_type_id} - {self.description} ({remunerado})"
 
     def to_dict(self):
         return {
-            "product_id": self.product_id,
-            "name": self.name,
-            "price": self.price,
-            "stock": self.stock
+            "leave_type_id": self.leave_type_id,
+            "description":   self.description,
+            "is_paid":       self.is_paid
         }
 
-    # Método estático: factoría desde dict (JSON).
     @staticmethod
     def from_dict(data):
-        return Product(
-            product_id=data["product_id"],
-            name=data["name"],
-            price=data["price"],
-            stock=data["stock"]
+        return LeaveType(
+            leave_type_id = data["leave_type_id"],
+            description   = data["description"],
+            is_paid       = data["is_paid"]
         )
-
-    # Método estático: utilidad de cálculo sin estado.
-    @staticmethod
-    def calculate_subtotal(price, quantity):
-        return round(price * quantity, 2)
