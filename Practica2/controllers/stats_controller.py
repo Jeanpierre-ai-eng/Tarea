@@ -112,6 +112,13 @@ class StatsController:
         ))
 
         # --- Total tiempo solicitado ---
+        # map + lambda: extrae el tiempo de cada permiso.
+        tiempos = list(map(lambda l: l["tiempo"], self.leaves))
+
+        # reduce + lambda: total de tiempo solicitado.
+        total_tiempo = reduce(lambda acc, t: acc + t, tiempos, 0)
+
+        # --- Total descuentos ---
         # Función auxiliar: calcula días entre fecha_desde y fecha_hasta.
         def days_between(leave):
             fmt        = "%Y-%m-%d"
@@ -119,14 +126,7 @@ class StatsController:
             date_until = datetime.strptime(leave["date_until"], fmt)
             return (date_until - date_from).days + 1
 
-        # map + lambda: días por cada permiso.
-        days_per_leave = list(map(lambda l: days_between(l), self.leaves))
-
-        # reduce + lambda: total de días solicitados.
-        total_days = reduce(lambda acc, d: acc + d, days_per_leave, 0)
-
-        # --- Total descuentos ---
-        # map + lambda: calcula el descuento de cada permiso no remunerado.
+        # Función auxiliar: calcula el descuento de cada permiso no remunerado.
         def calc_deduction(leave):
             hourly_rate = leave["employee"].get("salary", 0) / Employee.WORK_HOURS_MONTH
             days        = days_between(leave)
@@ -157,7 +157,7 @@ class StatsController:
         print(f"  Total permisos registrados  : {total}")
         print(f"  Permisos remunerados        : {len(paid_leaves)}")
         print(f"  Permisos no remunerados     : {len(unpaid_leaves)}")
-        print(f"  Total días solicitados      : {total_days} día(s)")
+        print(f"  Total tiempo solicitado     : {total_tiempo}")
         print(f"  Total descuentos generados  : {total_deductions:.2f}")
         print(f"  Días por empleado           : {days_by_employee}")
         print(f"  Empleado con más permisos   : {top_employee[0]} ({top_employee[1]} día(s))")
