@@ -1,155 +1,163 @@
-# Controlador de estadísticas: consulta general sobre clientes, productos y ventas.
-# Demuestra el uso de funciones de orden superior (map, filter, reduce) con
-# expresiones lambda y list/dict comprehensions sobre los datos persistidos.
+# Controlador de estadísticas: consulta general sobre empleados, tipos de permiso y permisos.
+# Usa funciones de orden superior (map, filter, reduce) con expresiones lambda
+# y list/dict comprehensions sobre los datos persistidos.
 from functools import reduce
+from datetime import datetime
 
 from core import JsonManager
-from models import Customer
+from models import Employee, LeaveType, Leave
 
 
 class StatsController:
-    CUSTOMERS_FILE = "data/customers.json"
-    PRODUCTS_FILE = "data/products.json"
-    SALES_FILE = "data/sales.json"
+    EMPLOYEES_FILE   = "data/employees.json"
+    LEAVE_TYPES_FILE = "data/leave_types.json"
+    LEAVES_FILE      = "data/leaves.json"
 
     def __init__(self):
-        self.customers = JsonManager(StatsController.CUSTOMERS_FILE).load()
-        self.products = JsonManager(StatsController.PRODUCTS_FILE).load()
-        self.sales = JsonManager(StatsController.SALES_FILE).load()
+        self.employees   = JsonManager(StatsController.EMPLOYEES_FILE).load()
+        self.leave_types = JsonManager(StatsController.LEAVE_TYPES_FILE).load()
+        self.leaves      = JsonManager(StatsController.LEAVES_FILE).load()
 
     # Punto de entrada del reporte. Imprime las tres secciones.
     def show(self):
-        print("\n=== CONSULTA GENERAL / ESTADÍSTICAS ===")
-        self._customer_stats()
-        self._product_stats()
-        self._sale_stats()
+        print("\n=== ESTADÍSTICAS DEL SISTEMA DE PERMISOS ===")
+        self._employee_stats()
+        self._leave_type_stats()
+        self._leave_stats()
 
-    # ---- Clientes ----
-    def _customer_stats(self):
-        print("\n-- Clientes --")
+    # ---- Empleados ----
+    def _employee_stats(self):
+        print("\n-- Empleados --")
 
-        if not self.customers:
-            print("  Sin clientes registrados")
+        if not self.employees:
+            print("  Sin empleados registrados.")
             return
 
-        # map + lambda: extrae los nombres.
-        names = list(map(lambda c: c["name"], self.customers))
+        total = len(self.employees)
 
-        # filter + lambda: clientes con identificación de longitud válida.
-        valid = list(filter(
-            lambda c: len(c["identification"]) == Customer.IDENTIFICATION_LENGTH,
-            self.customers
+        # map + lambda: extrae los nombres de todos los empleados.
+        names = list(map(lambda e: e["name"], self.employees))
+
+        # reduce + lambda: suma total de sueldos.
+        total_salary = reduce(lambda acc, e: acc + e["salary"], self.employees, 0)
+
+        # reduce + lambda: sueldo promedio.
+        avg_salary = total_salary / total
+
+        # reduce + lambda: empleado con mayor sueldo.
+        highest_paid = reduce(
+            lambda a, b: a if a["salary"] >= b["salary"] else b,
+            self.employees
+        )
+
+        # map + lambda: calcula el valor/hora de cada empleado.
+        hourly_rates = list(map(
+            lambda e: (e["name"], round(e["salary"] / Employee.WORK_HOURS_MONTH, 4)),
+            self.employees
         ))
 
-        # comprehension: clientes con identificación inválida.
-        invalid_ids = [
-            c["identification"]
-            for c in self.customers
-            if len(c["identification"]) != Customer.IDENTIFICATION_LENGTH
-        ]
+        print(f"  Total empleados registrados : {total}")
+        print(f"  Nombres                     : {', '.join(names)}")
+        print(f"  Masa salarial total         : {total_salary:.2f}")
+        print(f"  Sueldo promedio             : {avg_salary:.2f}")
+        print(f"  Empleado mejor remunerado   : {highest_paid['name']} ({highest_paid['salary']:.2f})")
+        print(f"  Valor/hora por empleado     : {hourly_rates}")
 
-        print(f"  Total registrados: {len(self.customers)}")
-        print(f"  Nombres: {', '.join(names)}")
-        print(f"  Con identificación válida ({Customer.IDENTIFICATION_LENGTH} dígitos): {len(valid)}")
-        print(f"  Identificaciones inválidas: {invalid_ids if invalid_ids else '—'}")
+    # ---- Tipos de permiso ----
+    def _leave_type_stats(self):
+        print("\n-- Tipos de Permiso --")
 
-    # ---- Productos ----
-    def _product_stats(self):
-        print("\n-- Productos --")
-
-        if not self.products:
-            print("  Sin productos registrados")
+        if not self.leave_types:
+            print("  Sin tipos de permiso registrados.")
             return
 
-        total = len(self.products)
+        total = len(self.leave_types)
 
-        # reduce + lambda: valor total del inventario (Σ price * stock).
-        inventory_value = reduce(
-            lambda acc, p: acc + p["price"] * p["stock"],
-            self.products,
+        # filter + lambda: tipos remunerados (is_paid == "S").
+        paid_types = list(filter(lambda lt: lt["is_paid"] == LeaveType.PAID, self.leave_types))
+
+        # filter + lambda: tipos no remunerados (is_paid == "N").
+        unpaid_types = list(filter(lambda lt: lt["is_paid"] == LeaveType.UNPAID, self.leave_types))
+
+        # comprehension: nombres de tipos remunerados.
+        paid_names   = [lt["description"] for lt in paid_types]
+
+        # comprehension: nombres de tipos no remunerados.
+        unpaid_names = [lt["description"] for lt in unpaid_types]
+
+        print(f"  Total tipos registrados : {total}")
+        print(f"  Remunerados             : {len(paid_types)}  → {', '.join(paid_names)   if paid_names   else '—'}")
+        print(f"  No remunerados          : {len(unpaid_types)} → {', '.join(unpaid_names) if unpaid_names else '—'}")
+
+    # ---- Permisos ----
+    def _leave_stats(self):
+        print("\n-- Permisos --")
+
+        if not self.leaves:
+            print("  Sin permisos registrados.")
+            return
+
+        total = len(self.leaves)
+
+        # filter + lambda: permisos remunerados (is_paid == "S").
+        paid_leaves = list(filter(
+            lambda l: l["leave_type"].get("is_paid") == "S",
+            self.leaves
+        ))
+
+        # filter + lambda: permisos no remunerados (is_paid == "N").
+        unpaid_leaves = list(filter(
+            lambda l: l["leave_type"].get("is_paid") == "N",
+            self.leaves
+        ))
+
+        # --- Total tiempo solicitado ---
+        # Función auxiliar: calcula días entre fecha_desde y fecha_hasta.
+        def days_between(leave):
+            fmt        = "%Y-%m-%d"
+            date_from  = datetime.strptime(leave["date_from"],  fmt)
+            date_until = datetime.strptime(leave["date_until"], fmt)
+            return (date_until - date_from).days + 1
+
+        # map + lambda: días por cada permiso.
+        days_per_leave = list(map(lambda l: days_between(l), self.leaves))
+
+        # reduce + lambda: total de días solicitados.
+        total_days = reduce(lambda acc, d: acc + d, days_per_leave, 0)
+
+        # --- Total descuentos ---
+        # map + lambda: calcula el descuento de cada permiso no remunerado.
+        def calc_deduction(leave):
+            hourly_rate = leave["employee"].get("salary", 0) / Employee.WORK_HOURS_MONTH
+            days        = days_between(leave)
+            hours       = days * 8  # jornada laboral estándar: 8 horas/día
+            return round(hourly_rate * hours, 2)
+
+        # reduce sobre permisos no remunerados: suma total de descuentos.
+        total_deductions = reduce(
+            lambda acc, l: acc + calc_deduction(l),
+            unpaid_leaves,
             0
         )
 
-        # reduce + lambda: precio promedio.
-        avg_price = reduce(lambda acc, p: acc + p["price"], self.products, 0) / total
-
-        # reduce + lambda: producto más caro.
-        most_expensive = reduce(
-            lambda a, b: a if a["price"] >= b["price"] else b,
-            self.products
-        )
-
-        # filter + lambda: productos sin stock.
-        out_of_stock = list(filter(lambda p: p["stock"] == 0, self.products))
-
-        # comprehension: nombres de productos disponibles.
-        in_stock_names = [p["name"] for p in self.products if p["stock"] > 0]
-
-        # map + lambda: pares (nombre, valor en inventario).
-        valuations = list(map(
-            lambda p: (p["name"], round(p["price"] * p["stock"], 2)),
-            self.products
-        ))
-
-        print(f"  Total registrados: {total}")
-        print(f"  Valor total del inventario: {inventory_value:.2f}")
-        print(f"  Precio promedio: {avg_price:.2f}")
-        print(f"  Producto más caro: {most_expensive['name']} ({most_expensive['price']:.2f})")
-        print(f"  Productos sin stock: {len(out_of_stock)}")
-        print(f"  Productos con stock disponible: {', '.join(in_stock_names) if in_stock_names else '—'}")
-        print(f"  Valor por producto: {valuations}")
-
-    # ---- Ventas ----
-    def _sale_stats(self):
-        print("\n-- Ventas --")
-
-        if not self.sales:
-            print("  Sin ventas registradas")
-            return
-
-        total = len(self.sales)
-
-        # reduce + lambda: ingreso total acumulado.
-        total_revenue = reduce(lambda acc, s: acc + s["total"], self.sales, 0)
-
-        avg_sale = total_revenue / total
-
-        # reduce + lambda: venta de mayor monto.
-        max_sale = reduce(
-            lambda a, b: a if a["total"] >= b["total"] else b,
-            self.sales
-        )
-
-        # comprehension: IDs de ventas por encima del promedio.
-        above_avg_ids = [s["sale_id"] for s in self.sales if s["total"] > avg_sale]
-
-        # reduce con comprehension anidada: total de unidades vendidas.
-        total_units = reduce(
-            lambda acc, s: acc + sum(item["quantity"] for item in s["items"]),
-            self.sales,
-            0
-        )
-
-        # dict comprehension: unidades vendidas por producto (agregado).
-        all_items = [item for s in self.sales for item in s["items"]]
-        product_names = {item["name"] for item in all_items}
-        units_by_product = {
+        # dict comprehension: total de días de permiso por empleado.
+        employee_names = {l["employee"]["name"] for l in self.leaves}
+        days_by_employee = {
             name: reduce(
-                lambda acc, it: acc + (it["quantity"] if it["name"] == name else 0),
-                all_items,
+                lambda acc, l: acc + (days_between(l) if l["employee"]["name"] == name else 0),
+                self.leaves,
                 0
             )
-            for name in product_names
+            for name in employee_names
         }
 
-        # max sobre items() con lambda como key: producto más vendido.
-        top_product = max(units_by_product.items(), key=lambda kv: kv[1])
+        # max con lambda: empleado con más días de permiso.
+        top_employee = max(days_by_employee.items(), key=lambda kv: kv[1])
 
-        print(f"  Total ventas registradas: {total}")
-        print(f"  Ingreso total: {total_revenue:.2f}")
-        print(f"  Venta promedio: {avg_sale:.2f}")
-        print(f"  Venta más alta: #{max_sale['sale_id']} ({max_sale['total']:.2f})")
-        print(f"  Ventas por encima del promedio: {above_avg_ids if above_avg_ids else '—'}")
-        print(f"  Unidades totales vendidas: {total_units}")
-        print(f"  Unidades por producto: {units_by_product}")
-        print(f"  Producto más vendido: {top_product[0]} ({top_product[1]} unid.)")
+        print(f"  Total permisos registrados  : {total}")
+        print(f"  Permisos remunerados        : {len(paid_leaves)}")
+        print(f"  Permisos no remunerados     : {len(unpaid_leaves)}")
+        print(f"  Total días solicitados      : {total_days} día(s)")
+        print(f"  Total descuentos generados  : {total_deductions:.2f}")
+        print(f"  Días por empleado           : {days_by_employee}")
+        print(f"  Empleado con más permisos   : {top_employee[0]} ({top_employee[1]} día(s))")
