@@ -1,63 +1,68 @@
-# Modelo de dominio: Venta.
-class Sale:
-    # Atributo estático: tasa de IVA aplicada a todas las ventas.
-    IVA_RATE = 0.15
+# Modelo de dominio: Permiso.
+class Leave:
+    # Atributos estáticos: modalidades de duración del permiso.
+    TYPE_DAYS  = "D"
+    TYPE_HOURS = "H"
 
-    def __init__(self, sale_id, customer, items, subtotal, iva, total):
-        # Identificador privado: solo accesible mediante la property `sale_id`.
-        self._sale_id = sale_id
-        self.customer = customer
-        self.items = items
-        self.subtotal = subtotal
-        self.iva = iva
-        self.total = total
+    def __init__(self, leave_id, employee, leave_type, date_from, date_until, duration_type):
+        # Identificador privado: solo accesible mediante la property `leave_id`.
+        self._leave_id = leave_id
+        self.employee      = employee       # dict con datos del empleado
+        self.leave_type    = leave_type     # dict con datos del tipo de permiso
+        self.date_from     = date_from      # string "YYYY-MM-DD"
+        self.date_until    = date_until     # string "YYYY-MM-DD"
+        self.duration_type = duration_type  # "D" = días completos | "H" = horas
 
     # Property de solo lectura para el ID (atributo encapsulado).
     @property
-    def sale_id(self):
-        return self._sale_id
+    def leave_id(self):
+        return self._leave_id
 
-    # Property: nombre del cliente asociado a la venta.
+    # Property: nombre del empleado asociado al permiso.
     @property
-    def customer_name(self):
-        return self.customer.get("name", "—")
+    def employee_name(self):
+        return self.employee.get("name", "—")
 
-    # Property: total de unidades vendidas en esta operación.
+    # Property: descripción del tipo de permiso.
     @property
-    def item_count(self):
-        return sum(item.get("quantity", 0) for item in self.items)
+    def leave_type_description(self):
+        return self.leave_type.get("description", "—")
 
-    # Property: resumen legible de la venta.
+    # Property: indica si este permiso descuenta del sueldo.
+    # Compara contra "N" directamente para evitar dependencia con la clase LeaveType.
+    @property
+    def affects_salary(self):
+        return self.leave_type.get("is_paid") == "N"
+
+    # Property: resumen legible del permiso.
     @property
     def summary(self):
+        modalidad = "Días"  if self.duration_type == Leave.TYPE_DAYS else "Horas"
+        afecta    = "Sí"    if self.affects_salary else "No"
         return (
-            f"Venta #{self.sale_id} - Cliente: {self.customer_name} - "
-            f"Items: {self.item_count} - Total: {self.total:.2f}"
+            f"Permiso #{self.leave_id} - Empleado: {self.employee_name} - "
+            f"Tipo: {self.leave_type_description} - "
+            f"Desde: {self.date_from} hasta: {self.date_until} - "
+            f"Modalidad: {modalidad} - Afecta sueldo: {afecta}"
         )
 
     def to_dict(self):
         return {
-            "sale_id": self.sale_id,
-            "customer": self.customer,
-            "items": self.items,
-            "subtotal": self.subtotal,
-            "iva": self.iva,
-            "total": self.total
+            "leave_id":      self.leave_id,
+            "employee":      self.employee,
+            "leave_type":    self.leave_type,
+            "date_from":     self.date_from,
+            "date_until":    self.date_until,
+            "duration_type": self.duration_type
         }
 
-    # Método estático: cálculo del IVA usando la tasa de la clase.
-    @staticmethod
-    def calculate_iva(subtotal):
-        return round(subtotal * Sale.IVA_RATE, 2)
-
-    # Método estático: factoría desde dict (JSON).
     @staticmethod
     def from_dict(data):
-        return Sale(
-            sale_id=data["sale_id"],
-            customer=data["customer"],
-            items=data["items"],
-            subtotal=data["subtotal"],
-            iva=data["iva"],
-            total=data["total"]
+        return Leave(
+            leave_id      = data["leave_id"],
+            employee      = data["employee"],
+            leave_type    = data["leave_type"],
+            date_from     = data["date_from"],
+            date_until    = data["date_until"],
+            duration_type = data["duration_type"]
         )
