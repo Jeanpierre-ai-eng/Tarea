@@ -18,6 +18,8 @@ class EmployeeController(CrudInterface, ValidationMixin, LogMixin):
         self.validate_not_empty(name,   "Nombre")
         self.validate_not_empty(cedula, "Cédula")
         self.validate_not_empty(salary, "Sueldo")
+        self.validate_cedula_ecuatoriana(cedula)
+        self.validate_positive_number(float(salary), "Sueldo")
 
         employee_id = len(self.employees) + 1
         employee    = Employee(employee_id, name, cedula, float(salary))
