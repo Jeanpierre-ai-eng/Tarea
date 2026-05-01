@@ -6,10 +6,14 @@ class EmployeeController(CrudInterface, ValidationMixin, LogMixin):
     DATA_FILE = "data/employees.json"
 
     def __init__(self):
-        self.db        = JsonManager(EmployeeController.DATA_FILE)
+        self.db = JsonManager(EmployeeController.DATA_FILE)
+
+    # Recarga los datos desde el archivo JSON en cada operación.
+    def _reload(self):
         self.employees = self.db.load()
 
     def create(self):
+        self._reload()
         print("\n=== REGISTRAR EMPLEADO ===")
         name   = input("Nombre: ")
         cedula = input("Cédula: ")
@@ -29,6 +33,7 @@ class EmployeeController(CrudInterface, ValidationMixin, LogMixin):
         self.log(f"Empleado '{name}' registrado correctamente")
 
     def read(self):
+        self._reload()
         print("\n=== EMPLEADOS REGISTRADOS ===")
         if not self.employees:
             print("No hay empleados registrados.")
@@ -43,6 +48,7 @@ class EmployeeController(CrudInterface, ValidationMixin, LogMixin):
         pass
 
     def delete(self):
+        self._reload()
         print("\n=== ELIMINAR EMPLEADO ===")
         employee_id = int(input("ID del empleado: "))
         for employee in self.employees:
