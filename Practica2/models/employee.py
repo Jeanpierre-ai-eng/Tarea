@@ -1,36 +1,43 @@
-# Modelo de dominio: Cliente.
-class Customer:
-    # Atributo estático: longitud esperada de la cédula/RUC.
-    IDENTIFICATION_LENGTH = 10
+# Modelo de dominio: Empleado.
+class Employee:
+    # Atributo estático: horas laborables al mes.
+    WORK_HOURS_MONTH = 240
 
-    def __init__(self, customer_id, name, identification):
-        # Identificador privado: solo accesible mediante la property `customer_id`.
-        self._customer_id = customer_id
+    def __init__(self, employee_id, name, cedula, salary):
+        # Identificador privado: solo accesible mediante la property `employee_id`.
+        self._employee_id = employee_id
         self.name = name
-        self.identification = identification
+        self.cedula = cedula
+        self.salary = salary
 
     # Property de solo lectura para el ID (atributo encapsulado).
     @property
-    def customer_id(self):
-        return self._customer_id
+    def employee_id(self):
+        return self._employee_id
 
-    # Property: representación legible del cliente para listados.
+    # Property calculada: valor por hora según el sueldo actual.
+    @property
+    def hourly_rate(self):
+        return round(self.salary / Employee.WORK_HOURS_MONTH, 4)
+
+    # Property: representación legible del empleado para listados.
     @property
     def display_name(self):
-        return f"ID {self.customer_id} - {self.name}"
+        return f"ID {self.employee_id} - {self.name}"
 
     def to_dict(self):
         return {
-            "customer_id": self.customer_id,
-            "name": self.name,
-            "identification": self.identification
+            "employee_id": self.employee_id,
+            "name":        self.name,
+            "cedula":      self.cedula,
+            "salary":      self.salary
         }
 
-    # Método estático: factoría que reconstruye un Customer desde un dict (JSON).
     @staticmethod
     def from_dict(data):
-        return Customer(
-            customer_id=data["customer_id"],
-            name=data["name"],
-            identification=data["identification"]
+        return Employee(
+            employee_id = data["employee_id"],
+            name        = data["name"],
+            cedula      = data["cedula"],
+            salary      = data["salary"]
         )
