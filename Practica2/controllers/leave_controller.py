@@ -2,7 +2,6 @@
 from core import CrudInterface, JsonManager, LogMixin, ValidationMixin
 from models import Employee, LeaveType, Leave
 
-
 class LeaveController(CrudInterface, ValidationMixin, LogMixin):
     DATA_FILE        = "data/leaves.json"
     EMPLOYEES_FILE   = "data/employees.json"
@@ -60,16 +59,19 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
         date_from     = input("  Fecha desde (YYYY-MM-DD): ")
         date_until    = input("  Fecha hasta (YYYY-MM-DD): ")
         duration_type = input("  Modalidad (D=Días / H=Horas): ").upper()
+        tiempo        = input("  Tiempo (cantidad): ")          # ← nuevo
 
         self.validate_not_empty(date_from,     "Fecha desde")
         self.validate_not_empty(date_until,    "Fecha hasta")
         self.validate_not_empty(duration_type, "Modalidad")
-
-        if duration_type not in (Leave.TYPE_DAYS, Leave.TYPE_HOURS):
-            raise ValueError("Modalidad inválida. Use 'D' para días o 'H' para horas.")
+        self.validate_not_empty(tiempo,        "Tiempo")        # ← nuevo
+        self.validate_date(date_from,  "Fecha desde")           # ← nuevo
+        self.validate_date(date_until, "Fecha hasta")           # ← nuevo
+        self.validate_duration_type(duration_type)              # ← reemplaza el if
+        self.validate_positive_number(float(tiempo), "Tiempo")  # ← nuevo
 
         leave_id = len(self.leaves) + 1
-        leave    = Leave(leave_id, employee, leave_type, date_from, date_until, duration_type)
+        leave    = Leave(leave_id, employee, leave_type, date_from, date_until, duration_type, float(tiempo))  # ← tiempo
 
         self.leaves.append(leave.to_dict())
         self.db.save(self.leaves)
