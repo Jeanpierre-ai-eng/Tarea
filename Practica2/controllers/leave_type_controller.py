@@ -2,17 +2,19 @@
 from core import CrudInterface, JsonManager, LogMixin, ValidationMixin
 from models import LeaveType
 
-
 class LeaveTypeController(CrudInterface, ValidationMixin, LogMixin):
     DATA_FILE = "data/leave_types.json"
 
     def __init__(self):
-        self.db          = JsonManager(LeaveTypeController.DATA_FILE)
+        self.db = JsonManager(LeaveTypeController.DATA_FILE)
+
+    # Recarga los datos desde el archivo JSON en cada operación.
+    def _reload(self):
         self.leave_types = self.db.load()
 
     def create(self):
+        self._reload()
         print("\n=== REGISTRAR TIPO DE PERMISO ===")
-
         description = input("Descripción: ")
         is_paid     = input("¿Es remunerado? (S/N): ").upper()
 
@@ -30,6 +32,7 @@ class LeaveTypeController(CrudInterface, ValidationMixin, LogMixin):
         self.log(f"Tipo de permiso '{description}' registrado correctamente")
 
     def read(self):
+        self._reload()
         print("\n=== TIPOS DE PERMISO REGISTRADOS ===")
         if not self.leave_types:
             print("No hay tipos de permiso registrados.")
@@ -43,6 +46,7 @@ class LeaveTypeController(CrudInterface, ValidationMixin, LogMixin):
         pass
 
     def delete(self):
+        self._reload()
         print("\n=== ELIMINAR TIPO DE PERMISO ===")
         leave_type_id = int(input("ID del tipo de permiso: "))
         for leave_type in self.leave_types:
