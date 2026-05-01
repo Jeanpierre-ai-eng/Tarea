@@ -1,4 +1,4 @@
-# Mixin de validaciones reutilizables para los modelos y controladores.
+
 # Las validaciones son métodos estáticos: no dependen del estado de la instancia,
 # pero se exponen como mixin para inyectarlas vía herencia múltiple.
 # Mixin de validaciones reutilizables para los modelos y controladores.
