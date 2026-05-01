@@ -1,81 +1,54 @@
-# Controlador de ventas: registra ventas y actualiza el inventario.
-from core import JsonManager, LogMixin
-from models import Sale
+# Controlador de tipos de permiso: CRUD con validaciones y persistencia.
+from core import CrudInterface, JsonManager, LogMixin, ValidationMixin
+from models import LeaveType
 
 
-class SaleController(LogMixin):
-    SALES_FILE = "data/sales.json"
-    PRODUCTS_FILE = "data/products.json"
-    CUSTOMERS_FILE = "data/customers.json"
+class LeaveTypeController(CrudInterface, ValidationMixin, LogMixin):
+    DATA_FILE = "data/leave_types.json"
 
     def __init__(self):
-        self.sales_db = JsonManager(SaleController.SALES_FILE)
-        self.products_db = JsonManager(SaleController.PRODUCTS_FILE)
-        self.customers_db = JsonManager(SaleController.CUSTOMERS_FILE)
+        self.db          = JsonManager(LeaveTypeController.DATA_FILE)
+        self.leave_types = self.db.load()
 
-        self.sales = self.sales_db.load()
-        self.products = self.products_db.load()
-        self.customers = self.customers_db.load()
+    def create(self):
+        print("\n=== REGISTRAR TIPO DE PERMISO ===")
 
-    def find_customer(self, customer_id):
-        for customer in self.customers:
-            if customer["customer_id"] == customer_id:
-                return customer
-        return None
+        description = input("Descripción: ")
+        is_paid     = input("¿Es remunerado? (S/N): ").upper()
 
-    def find_product(self, product_id):
-        for product in self.products:
-            if product["product_id"] == product_id:
-                return product
-        return None
+        self.validate_not_empty(description, "Descripción")
+        self.validate_not_empty(is_paid,     "Remunerado")
 
-    def calculate_subtotal(self, items):
-        return sum(item["subtotal"] for item in items)
+        if is_paid not in (LeaveType.PAID, LeaveType.UNPAID):
+            raise ValueError("Valor inválido. Use 'S' para remunerado o 'N' para no remunerado.")
 
-    def register_sale(self, customer, items):
-        subtotal = round(self.calculate_subtotal(items), 2)
-        iva = Sale.calculate_iva(subtotal)
-        total = round(subtotal + iva, 2)
+        leave_type_id = len(self.leave_types) + 1
+        leave_type    = LeaveType(leave_type_id, description, is_paid)
 
-        sale_id = len(self.sales) + 1
+        self.leave_types.append(leave_type.to_dict())
+        self.db.save(self.leave_types)
+        self.log(f"Tipo de permiso '{description}' registrado correctamente")
 
-        sale = Sale(
-            sale_id=sale_id,
-            customer=customer,
-            items=items,
-            subtotal=subtotal,
-            iva=iva,
-            total=total
-        )
-
-        self.sales.append(sale.to_dict())
-
-        self.sales_db.save(self.sales)
-        self.products_db.save(self.products)
-
-        self.log("Venta registrada correctamente")
-        print(f"Subtotal: {subtotal:.2f}")
-        print(f"IVA {int(Sale.IVA_RATE * 100)}%: {iva:.2f}")
-        print(f"Total: {total:.2f}")
-
-    def list_sales(self):
-        print("\n=== VENTAS ===")
-
-        if not self.sales:
-            print("No hay ventas registradas")
+    def read(self):
+        print("\n=== TIPOS DE PERMISO REGISTRADOS ===")
+        if not self.leave_types:
+            print("No hay tipos de permiso registrados.")
             return
+        for leave_type_data in self.leave_types:
+            leave_type = LeaveType.from_dict(leave_type_data)
+            print(f"  {leave_type.display_name}")
 
-        for sale_data in self.sales:
-            sale = Sale.from_dict(sale_data)
-            print(f"\nVenta #{sale.sale_id} - Cliente: {sale.customer_name}")
-            print("  Productos:")
-            for item in sale.items:
-                print(
-                    f"    - {item['name']} x{item['quantity']} "
-                    f"@ {item['price']:.2f}  =  {item['subtotal']:.2f}"
-                )
-            print(
-                f"  Subtotal: {sale.subtotal:.2f} | "
-                f"IVA: {sale.iva:.2f} | "
-                f"Total: {sale.total:.2f}"
-            )
+    def update(self):
+        # No requerido según los requisitos funcionales.
+        pass
+
+    def delete(self):
+        print("\n=== ELIMINAR TIPO DE PERMISO ===")
+        leave_type_id = int(input("ID del tipo de permiso: "))
+        for leave_type in self.leave_types:
+            if leave_type["leave_type_id"] == leave_type_id:
+                self.leave_types.remove(leave_type)
+                self.db.save(self.leave_types)
+                self.log(f"Tipo de permiso #{leave_type_id} eliminado correctamente")
+                return
+        print("Tipo de permiso no encontrado.")
