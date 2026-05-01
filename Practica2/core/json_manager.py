@@ -9,6 +9,22 @@ class JsonManager:
         # Ruta del archivo JSON sobre el cual se realizarán las operaciones.
         self.filename = filename
 
+    def initialize(self):
+        """Crea el archivo JSON con una lista vacía si aún no existe.
+
+        Si el archivo ya existe lo deja intacto para no sobreescribir datos.
+        Útil para garantizar que los archivos de data/ existan antes de operar.
+        """
+        # Crea el directorio destino si no existe.
+        directory = os.path.dirname(self.filename)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+
+        # Solo crea el archivo si no existe — si ya existe, pasa de largo.
+        if not os.path.exists(self.filename):
+            with open(self.filename, "w", encoding="utf-8") as file:
+                json.dump([], file, indent=4, ensure_ascii=False)
+
     def load(self):
         """Carga y retorna el contenido del archivo JSON.
 
