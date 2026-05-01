@@ -8,7 +8,10 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
     LEAVE_TYPES_FILE = "data/leave_types.json"
 
     def __init__(self):
-        self.db          = JsonManager(LeaveController.DATA_FILE)
+        self.db = JsonManager(LeaveController.DATA_FILE)
+
+    # Recarga los datos desde los archivos JSON en cada operación.
+    def _reload(self):
         self.leaves      = self.db.load()
         self.employees   = JsonManager(LeaveController.EMPLOYEES_FILE).load()
         self.leave_types = JsonManager(LeaveController.LEAVE_TYPES_FILE).load()
@@ -46,6 +49,7 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
         return None
 
     def create(self):
+        self._reload()
         print("\n=== REGISTRAR PERMISO ===")
 
         employee = self._select_employee()
@@ -59,25 +63,26 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
         date_from     = input("  Fecha desde (YYYY-MM-DD): ")
         date_until    = input("  Fecha hasta (YYYY-MM-DD): ")
         duration_type = input("  Modalidad (D=Días / H=Horas): ").upper()
-        tiempo        = input("  Tiempo (cantidad): ")          # ← nuevo
+        tiempo        = input("  Tiempo (cantidad): ")
 
         self.validate_not_empty(date_from,     "Fecha desde")
         self.validate_not_empty(date_until,    "Fecha hasta")
         self.validate_not_empty(duration_type, "Modalidad")
-        self.validate_not_empty(tiempo,        "Tiempo")        # ← nuevo
-        self.validate_date(date_from,  "Fecha desde")           # ← nuevo
-        self.validate_date(date_until, "Fecha hasta")           # ← nuevo
-        self.validate_duration_type(duration_type)              # ← reemplaza el if
-        self.validate_positive_number(float(tiempo), "Tiempo")  # ← nuevo
+        self.validate_not_empty(tiempo,        "Tiempo")
+        self.validate_date(date_from,  "Fecha desde")
+        self.validate_date(date_until, "Fecha hasta")
+        self.validate_duration_type(duration_type)
+        self.validate_positive_number(float(tiempo), "Tiempo")
 
         leave_id = len(self.leaves) + 1
-        leave    = Leave(leave_id, employee, leave_type, date_from, date_until, duration_type, float(tiempo))  # ← tiempo
+        leave    = Leave(leave_id, employee, leave_type, date_from, date_until, duration_type, float(tiempo))
 
         self.leaves.append(leave.to_dict())
         self.db.save(self.leaves)
         self.log(f"Permiso #{leave_id} registrado correctamente")
 
     def read(self):
+        self._reload()
         print("\n=== PERMISOS REGISTRADOS ===")
         if not self.leaves:
             print("No hay permisos registrados.")
@@ -91,6 +96,7 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
         pass
 
     def delete(self):
+        self._reload()
         print("\n=== ELIMINAR PERMISO ===")
         leave_id = int(input("ID del permiso: "))
         for leave in self.leaves:
