@@ -4,14 +4,15 @@ class Leave:
     TYPE_DAYS  = "D"
     TYPE_HOURS = "H"
 
-    def __init__(self, leave_id, employee, leave_type, date_from, date_until, duration_type):
+    def __init__(self, leave_id, employee, leave_type, date_from, date_until, duration_type, tiempo):
         # Identificador privado: solo accesible mediante la property `leave_id`.
-        self._leave_id = leave_id
+        self._leave_id     = leave_id
         self.employee      = employee       # dict con datos del empleado
         self.leave_type    = leave_type     # dict con datos del tipo de permiso
         self.date_from     = date_from      # string "YYYY-MM-DD"
         self.date_until    = date_until     # string "YYYY-MM-DD"
         self.duration_type = duration_type  # "D" = días completos | "H" = horas
+        self.tiempo        = tiempo         # cantidad de días u horas
 
     # Property de solo lectura para el ID (atributo encapsulado).
     @property
@@ -29,7 +30,6 @@ class Leave:
         return self.leave_type.get("description", "—")
 
     # Property: indica si este permiso descuenta del sueldo.
-    # Compara contra "N" directamente para evitar dependencia con la clase LeaveType.
     @property
     def affects_salary(self):
         return self.leave_type.get("is_paid") == "N"
@@ -43,7 +43,7 @@ class Leave:
             f"Permiso #{self.leave_id} - Empleado: {self.employee_name} - "
             f"Tipo: {self.leave_type_description} - "
             f"Desde: {self.date_from} hasta: {self.date_until} - "
-            f"Modalidad: {modalidad} - Afecta sueldo: {afecta}"
+            f"Modalidad: {modalidad} - Tiempo: {self.tiempo} - Afecta sueldo: {afecta}"  # ← tiempo
         )
 
     def to_dict(self):
@@ -53,7 +53,8 @@ class Leave:
             "leave_type":    self.leave_type,
             "date_from":     self.date_from,
             "date_until":    self.date_until,
-            "duration_type": self.duration_type
+            "duration_type": self.duration_type,
+            "tiempo":        self.tiempo        # ← nuevo
         }
 
     @staticmethod
@@ -64,5 +65,6 @@ class Leave:
             leave_type    = data["leave_type"],
             date_from     = data["date_from"],
             date_until    = data["date_until"],
-            duration_type = data["duration_type"]
+            duration_type = data["duration_type"],
+            tiempo        = data["tiempo"]      # ← nuevo
         )
