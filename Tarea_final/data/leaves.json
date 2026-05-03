@@ -1,0 +1,56 @@
+[
+    {
+        "leave_id": 1,
+        "employee": {
+            "employee_id": 1,
+            "name": "alve",
+            "cedula": "0954761078",
+            "salary": 1500.0
+        },
+        "leave_type": {
+            "leave_type_id": 1,
+            "description": "tripofobia",
+            "is_paid": "N"
+        },
+        "date_from": "2025-12-12",
+        "date_until": "2027-12-12",
+        "duration_type": "D",
+        "tiempo": 15.0
+    },
+    {
+        "leave_id": 2,
+        "employee": {
+            "employee_id": 2,
+            "name": "kinshi",
+            "cedula": "1203719859",
+            "salary": 2000.0
+        },
+        "leave_type": {
+            "leave_type_id": 1,
+            "description": "tripofobia",
+            "is_paid": "N"
+        },
+        "date_from": "2026-11-12",
+        "date_until": "2030-12-12",
+        "duration_type": "H",
+        "tiempo": 1.0
+    },
+    {
+        "leave_id": 3,
+        "employee": {
+            "employee_id": 2,
+            "name": "kinshi",
+            "cedula": "1203719859",
+            "salary": 2000.0
+        },
+        "leave_type": {
+            "leave_type_id": 2,
+            "description": "talasofobia",
+            "is_paid": "S"
+        },
+        "date_from": "2026-12-12",
+        "date_until": "2027-12-12",
+        "duration_type": "D",
+        "tiempo": 365.0
+    }
+]
