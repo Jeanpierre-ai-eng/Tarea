@@ -1,4 +1,3 @@
-# Paquete de vistas: capa de presentación (interfaces de consola).
 from controllers import (
     EmployeeController,
     LeaveTypeController,
@@ -22,7 +21,6 @@ class Menu:
         self.leave_type_controller = LeaveTypeController()
         self.leave_controller      = LeaveController()
 
-    # ── Submenú CRUD de empleados ─────────────────────────────────────────────
     def employee_menu(self):
         while True:
             clear()
@@ -54,7 +52,6 @@ class Menu:
 
             input(Color.paint("\n  Presione Enter para continuar...", Color.BYELLOW))
 
-    # ── Submenú CRUD de tipos de permiso ──────────────────────────────────────
     def leave_type_menu(self):
         while True:
             clear()
@@ -86,7 +83,6 @@ class Menu:
 
             input(Color.paint("\n  Presione Enter para continuar...", Color.BYELLOW))
 
-    # ── Submenú CRUD de permisos ──────────────────────────────────────────────
     def leave_menu(self):
         while True:
             clear()
@@ -118,13 +114,11 @@ class Menu:
 
             input(Color.paint("\n  Presione Enter para continuar...", Color.BYELLOW))
 
-    # ── Vista de estadísticas ─────────────────────────────────────────────────
     def stats_view(self):
         clear()
         StatsController().show()
         input(Color.paint("\n  Presione Enter para continuar...", Color.BYELLOW))
 
-    # ── Menú principal ────────────────────────────────────────────────────────
     def main_menu(self):
         while True:
             clear()
