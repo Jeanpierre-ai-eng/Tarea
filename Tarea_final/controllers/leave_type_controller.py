@@ -1,4 +1,3 @@
-# Controlador de tipos de permiso: CRUD con validaciones y persistencia.
 from core import CrudInterface, JsonManager, LogMixin, ValidationMixin
 from core import print_header, print_table, print_warning, Color
 from models import LeaveType
@@ -50,7 +49,6 @@ class LeaveTypeController(CrudInterface, ValidationMixin, LogMixin):
                 colors[i] = {2: Color.BGREEN}
             rows.append([leave_type.leave_type_id, leave_type.description, rem_text])
 
-        # Construye col_colors por columna (no por fila).
         col_colors_map = {}
         for i, row in enumerate(rows):
             for col_idx, color in colors[i].items():
@@ -58,7 +56,6 @@ class LeaveTypeController(CrudInterface, ValidationMixin, LogMixin):
                     col_colors_map[col_idx] = []
                 col_colors_map[col_idx].append((i, color))
 
-        # Impresión manual para soportar color por celda individual.
         from core.console import _table_row, _table_divider, Color as C
         widths = [len(str(h)) for h in headers]
         for row in rows:
@@ -78,7 +75,6 @@ class LeaveTypeController(CrudInterface, ValidationMixin, LogMixin):
         print(Clr.paint(f"  {len(rows)} registro(s)", Clr.GRAY))
 
     def update(self):
-        # No requerido según los requisitos funcionales.
         pass
 
     def delete(self):
@@ -88,7 +84,6 @@ class LeaveTypeController(CrudInterface, ValidationMixin, LogMixin):
             print_warning("No hay tipos de permiso registrados.")
             return
 
-        # Muestra tabla resumida para que el usuario identifique el ID.
         headers = ["ID", "Descripción", "Remunerado"]
         rows    = [
             [lt["leave_type_id"], lt["description"], "✔ Sí" if lt["is_paid"] == "S" else "✘ No"]
