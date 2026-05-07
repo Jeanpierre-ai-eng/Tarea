@@ -5,7 +5,7 @@ class LeaveType:
     def __init__(self, leave_type_id, description, is_paid):
         self._leave_type_id = leave_type_id
         self.description = description
-        self.is_paid = is_paid  # "S" o "N"
+        self.is_paid = is_paid  
 
     @property
     def leave_type_id(self):
