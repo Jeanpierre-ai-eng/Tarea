@@ -1,4 +1,3 @@
-# Controlador de permisos: CRUD con validaciones y persistencia.
 from core import CrudInterface, JsonManager, LogMixin, ValidationMixin
 from core import print_header, print_separator, print_warning, print_table, Color
 from core.console import _table_row, _table_divider
@@ -16,8 +15,6 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
         self.employees   = []
         self.leave_types = []
 
-    # Muestra la lista de empleados disponibles y retorna el seleccionado.
-    # Recarga el JSON en cada llamada para reflejar registros nuevos en la sesión.
     def _select_employee(self):
         self.employees = JsonManager(LeaveController.EMPLOYEES_FILE).load()
         if not self.employees:
@@ -34,8 +31,6 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
         print_warning("Empleado no encontrado.")
         return None
 
-    # Muestra la lista de tipos de permiso disponibles y retorna el seleccionado.
-    # Recarga el JSON en cada llamada para reflejar registros nuevos en la sesión.
     def _select_leave_type(self):
         self.leave_types = JsonManager(LeaveController.LEAVE_TYPES_FILE).load()
         if not self.leave_types:
@@ -52,7 +47,6 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
         print_warning("Tipo de permiso no encontrado.")
         return None
 
-    # Calcula el descuento según modalidad y tipo de permiso.
     def _calc_deduction(self, employee, leave_type, tiempo, duration_type):
         if leave_type.get("is_paid") == LeaveType.PAID:
             return 0.0
@@ -105,7 +99,6 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
         deduction    = self._calc_deduction(employee, leave_type, tiempo_float, duration_type)
         self._print_summary(employee, leave_type, date_from, date_until, duration_type, tiempo_float, deduction)
 
-        # Confirmación numérica antes de persistir.
         print(Color.paint("  1", Color.WHITE, Color.BG_GREEN) + Color.paint(" Confirmar   ", Color.BGREEN) +
               Color.paint("  2", Color.WHITE, Color.BG_RED)   + Color.paint(" Cancelar",    Color.BRED))
         opcion = input(Color.paint("\n  Opción: ", Color.BOLD, Color.BWHITE)).strip()
@@ -148,7 +141,6 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
             ])
             row_colors.append({7: desc_color})
 
-        # Calcula anchos.
         widths = [len(str(h)) for h in headers]
         for row in rows:
             for i, cell in enumerate(row):
@@ -166,7 +158,6 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
         print(Color.paint(f"  {len(rows)} permiso(s) registrado(s)", Color.GRAY))
 
     def update(self):
-        # No requerido según los requisitos funcionales.
         pass
 
     def delete(self):
@@ -176,7 +167,6 @@ class LeaveController(CrudInterface, ValidationMixin, LogMixin):
             print_warning("No hay permisos registrados.")
             return
 
-        # Muestra tabla resumida para que el usuario identifique el ID.
         headers = ["ID", "Empleado", "Tipo", "Desde", "Hasta"]
         rows    = [
             [
