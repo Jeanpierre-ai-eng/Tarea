@@ -1,4 +1,3 @@
-# Controlador de empleados: orquesta el CRUD aplicando validaciones y persistencia.
 from core import CrudInterface, JsonManager, LogMixin, ValidationMixin
 from core import print_header, print_table, print_warning, print_error, Color
 from models import Employee
@@ -14,7 +13,6 @@ class EmployeeController(CrudInterface, ValidationMixin, LogMixin):
     def create(self):
         print_header("REGISTRAR EMPLEADO", Color.BG_PURPLE)
 
-        # Nombre: solo letras y espacios, con reintento en bucle.
         while True:
             name = input(Color.paint("  Nombre : ", Color.BWHITE))
             try:
@@ -24,7 +22,6 @@ class EmployeeController(CrudInterface, ValidationMixin, LogMixin):
             except ValueError as e:
                 print_error(str(e))
 
-        # Cédula: validación módulo 10, con reintento en bucle.
         while True:
             cedula = input(Color.paint("  Cédula : ", Color.BWHITE))
             try:
@@ -34,7 +31,6 @@ class EmployeeController(CrudInterface, ValidationMixin, LogMixin):
             except ValueError as e:
                 print_error(str(e))
 
-        # Sueldo: solo número positivo, con reintento en bucle.
         while True:
             salary = input(Color.paint("  Sueldo : ", Color.BWHITE))
             try:
@@ -54,7 +50,6 @@ class EmployeeController(CrudInterface, ValidationMixin, LogMixin):
 
     def read(self):
         print_header("EMPLEADOS REGISTRADOS", Color.BG_PURPLE)
-        # Recarga para mostrar siempre el estado actual del JSON.
         self.employees = self.db.load()
         if not self.employees:
             print_warning("No hay empleados registrados.")
@@ -75,7 +70,6 @@ class EmployeeController(CrudInterface, ValidationMixin, LogMixin):
         print_table(headers, rows)
 
     def update(self):
-        # No requerido según los requisitos funcionales.
         pass
 
     def delete(self):
@@ -85,7 +79,6 @@ class EmployeeController(CrudInterface, ValidationMixin, LogMixin):
             print_warning("No hay empleados registrados.")
             return
 
-        # Muestra tabla resumida para que el usuario identifique el ID.
         headers = ["ID", "Nombre", "Cédula"]
         rows    = [[e["employee_id"], e["name"], e["cedula"]] for e in self.employees]
         print_table(headers, rows)
