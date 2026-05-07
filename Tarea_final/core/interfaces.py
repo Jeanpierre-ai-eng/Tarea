@@ -1,16 +1,8 @@
-"""
-Módulo de interfaces CRUD.
-Define el contrato para operaciones básicas de gestión de datos.
-"""
+
 from abc import ABC, abstractmethod
 
 
 class CrudInterface(ABC):
-    """
-    Interfaz abstracta que define las operaciones CRUD.
-    Toda clase que ofrezca creación, lectura, actualización y eliminación
-    de registros debe implementar este contrato.
-    """
 
     @abstractmethod
     def create(self):
