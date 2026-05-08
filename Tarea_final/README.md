@@ -44,7 +44,41 @@ Practica2/
 
 ---
 
-## 2. Arquitectura por capas (MVC)
+## 2. Prompts utilizados con IA
+
+El desarrollo del sistema fue asistido por **Claude (Anthropic)**. A continuación se listan los prompts utilizados organizados por capa:
+
+### Models
+
+> "Tengo estos archivos de models (employee.py, leave.py, leave_type.py), quiero que me expliques cómo funciona cada uno y cómo se conectan entre sí, especialmente cómo `to_dict` y `from_dict` se usan para guardar en JSON"
+
+> "Con base a leave.py, agrégale el campo `tiempo` al constructor, `to_dict` y `from_dict`, y explícame qué cambiaste y por qué"
+
+### Core
+
+> "Quiero que me expliques cómo funciona el algoritmo módulo 10 para validar cédulas ecuatorianas y que lo implementes como método estático en mixins.py junto con `validate_date` y `validate_duration_type`"
+
+> "Con base a este decorators.py, agrégale un decorador `confirm_save` que pida confirmación 1/2 antes de ejecutar una función, usa `@wraps` y explícame cómo funciona"
+
+> "Quiero que crees un archivo console.py dentro de core que maneje colores ANSI, `gotoxy`, `clear` y una función `print_table` para mostrar tablas alineadas en consola, sin usar librerías externas"
+
+### Controllers
+
+> "Con base a employee_controller.py, modifica el método `create()` para que valide cada campo por separado con reintento en bucle — si el nombre tiene números que salga error y vuelva a pedir el dato"
+
+> "Con base a leave_controller.py, hay un problema: si registro un empleado nuevo en la misma sesión y luego voy a registrar un permiso, el empleado no aparece. Explícame por qué pasa eso y corrígelo"
+
+> "Con base a leave_controller.py, agrégale antes de guardar un permiso un resumen que muestre si es remunerado o no y cuánto descuenta del sueldo, con confirmación 1/2"
+
+### Views
+
+> "Con base a menu.py, aplícale colores ANSI usando el console.py que tenemos, que cada opción tenga su color según su intención — verde para registrar, rojo para eliminar — y que se limpie la pantalla al cambiar de menú"
+
+> "En el `delete` de los 3 controladores, antes de pedir el ID quiero que se muestre una tabla resumida para que el usuario sepa qué va a eliminar"
+
+---
+
+## 3. Arquitectura por capas (MVC)
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -86,7 +120,7 @@ Practica2/
 
 ---
 
-## 3. Modelos de dominio
+## 4. Modelos de dominio
 
 ### `Employee`
 | Atributo | Tipo | Descripción |
@@ -125,7 +159,7 @@ Practica2/
 
 ---
 
-## 4. Infraestructura (core/)
+## 5. Infraestructura (core/)
 
 ### Validaciones disponibles (`ValidationMixin`)
 
@@ -154,7 +188,7 @@ Practica2/
 
 ---
 
-## 5. Flujo general de ejecución
+## 6. Flujo general de ejecución
 
 ### 5.1 Arranque
 
@@ -218,7 +252,7 @@ Usuario → leave_menu → create()
 
 ---
 
-## 6. Modelo de datos (JSON)
+## 7. Modelo de datos (JSON)
 
 ### `employees.json`
 ```json
@@ -274,7 +308,7 @@ Usuario → leave_menu → create()
 
 ---
 
-## 7. Conceptos POO aplicados
+## 8. Conceptos POO aplicados
 
 | Concepto | Dónde |
 |---|---|
@@ -289,7 +323,7 @@ Usuario → leave_menu → create()
 
 ---
 
-## 8. Estadísticas del sistema
+## 9. Estadísticas del sistema
 
 `StatsController` genera un reporte con:
 
@@ -308,7 +342,7 @@ Usuario → leave_menu → create()
 
 ---
 
-## 9. Ejecución
+## 10. Ejecución
 
 Desde la raíz del proyecto:
 
@@ -320,7 +354,7 @@ No requiere dependencias externas: utiliza únicamente módulos de la librería 
 
 ---
 
-## 10. Interfaz visual
+## 11. Interfaz visual
 
 La consola usa códigos ANSI implementados en `core/console.py` sin librerías externas:
 
