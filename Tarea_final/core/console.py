@@ -32,7 +32,6 @@ class Color:
 
     @staticmethod
     def paint(text, *codes):
-        """Aplica uno o más códigos ANSI al texto y resetea al final."""
         return "".join(codes) + text + Color.RESET
 
 
